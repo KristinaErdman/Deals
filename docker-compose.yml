@@ -1,0 +1,12 @@
+version: '3'
+services:
+    web:
+        build: .
+        command: python3.9 manage.py runserver 127.0.0.1:8000
+        container_name: deals_container
+        volumes:
+            - .:/Deals
+        ports:
+            - '8000:8000'
+        expose:
+            - '8000'
