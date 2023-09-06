@@ -1,6 +1,7 @@
 name: deals
 services:
     app:
+        container_name: 'app'
         build: .
         command: python manage.py runserver 0.0.0.0:8000
         env_file:
