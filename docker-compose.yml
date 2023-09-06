@@ -1,12 +1,13 @@
-version: '3'
+name: deals
 services:
-    web:
+    app:
         build: .
-        command: python3.9 manage.py runserver 127.0.0.1:8000
-        container_name: deals_container
+        command: python manage.py runserver 0.0.0.0:8000
+        env_file:
+            - .env
         volumes:
-            - .:/Deals
-        ports:
-            - '8000:8000'
+            - ./:/app
         expose:
-            - '8000'
+            - 8000
+        ports:
+            - 8000:8000
