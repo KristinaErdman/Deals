@@ -3,11 +3,12 @@ FROM python:3.9.6-slim as base
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
+RUN pip install poetry
+RUN poetry config virtualenvs.create false
+
 WORKDIR /app
 
-COPY requirements.txt .
+COPY pyproject.toml .
+COPY poetry.lock .
 
-RUN pip install --upgrade pip && pip install -r requirements.txt
-
-
-
+RUN poetry install
