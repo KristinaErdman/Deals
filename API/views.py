@@ -15,13 +15,10 @@ from .serializers import CustomersTopSerializer, FileSerializer
 class APITopCustomers(APIView):
 
     def get(self, request, limit):
-        # применяю агрегатную функцию чтобы опеределить потраченную покупателями сумму
-        # сортирую покупателей по размеру потраченной ими суммы и оставляю первые limit из них
         customers = Customer.objects.annotate(Sum('deals__total')).order_by('-deals__total__sum')[:limit]
 
         customers_info = list()
-        all_gems = list()
-        # формирую список из словарей нужных значений для каждого покупателя и список всех камней
+        all_gems = dict()
         for customer in customers:
             info = {
                 'username': customer.username,
@@ -29,16 +26,18 @@ class APITopCustomers(APIView):
                 'gems': customer.get_gems_names(),
             }
             customers_info.append(info)
-            all_gems.extend(info['gems'])
 
-        del (customers)
-        # формирую множество уникальных камней
-        unique_gems = set([gem for gem in all_gems if all_gems.count(gem) == 1])
-        del (all_gems)
+            for gem in info['gems']:
+                all_gems[gem] = all_gems.get(gem, 0)
+                all_gems[gem] += 1
 
-        # у каждого покупателя убираю уникальные камни
+        del customers
+
+        unique_gems = set([gem for gem in all_gems if all_gems[gem] == 1])
+        del all_gems
+
         for customer in customers_info:
-            customer['gems'] = customer['gems'] - unique_gems
+            customer['gems'] -= unique_gems
 
         serializer = CustomersTopSerializer(customers_info, many=True)
         return Response({'response': serializer.data}, status=status.HTTP_200_OK)
@@ -83,7 +82,6 @@ class APIDeals(APIView):
             Gem.objects.all().delete()
             Deal.objects.all().delete()
 
-            # считываю информаию из файла и заношу в БД
             try:
                 self.save_deals_from_file(file)
             except Exception as error:
