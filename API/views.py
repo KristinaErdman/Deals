@@ -14,7 +14,12 @@ from .serializers import CustomersTopSerializer, FileSerializer
 
 class APITopCustomers(APIView):
 
-    def get(self, request, limit):
+    def get(self, request):
+        try:
+            limit = int(request.query_params.get('limit', None))
+        except ValueError:
+            raise ValidationError('Limit must be integer')
+
         customers = Customer.objects.annotate(Sum('deals__total')).order_by('-deals__total__sum')[:limit]
 
         customers_info = list()
