@@ -1,6 +1,7 @@
 import codecs
 import csv
 
+from django.db import transaction
 from django.db.models import Sum
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
@@ -58,6 +59,7 @@ class APIDeals(APIView):
         except KeyError:
             raise KeyError('The file content does not match the desired format')
 
+    @transaction.atomic()
     def post(self, request):
         file_serializer = FileSerializer(data=request.data)
         if file_serializer.is_valid(raise_exception=True):
