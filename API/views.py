@@ -1,5 +1,6 @@
 from django.db.models import Sum
 from rest_framework import status
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -43,10 +44,9 @@ class APITopCustomers(APIView):
 
 
 class APIDeals(APIView):
-
     def post(self, request):
         file_serializer = FileSerializer(data=request.data)
-        if file_serializer.is_valid():
+        if file_serializer.is_valid(raise_exception=True):
             file = request.data['deals']
 
             # очищаю БД, т.к. ранее загруженные версии файла не должны влиять на результат обработки новых
@@ -60,10 +60,4 @@ class APIDeals(APIView):
             except Exception as error:
                 raise ValidationError(detail=error)
 
-            if error:
-                return Response({'Status': 'Error', 'Desc': str(error)}, status=status.HTTP_400_BAD_REQUEST)
-            else:
-                return Response({'Status': 'OK'}, status=status.HTTP_201_CREATED)
-        else:
-            return Response({'Status': 'Error', 'Desc': file_serializer.errors['deals'], },
-                            status=status.HTTP_400_BAD_REQUEST)
+            return Response({'Status': 'OK'}, status=status.HTTP_201_CREATED)
