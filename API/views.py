@@ -1,3 +1,6 @@
+import codecs
+import csv
+
 from django.db.models import Sum
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
@@ -6,7 +9,6 @@ from rest_framework.views import APIView
 
 from .models import Customer, Deal, Gem
 from .serializers import CustomersTopSerializer, FileSerializer
-from .services import save_deals_from_file
 
 
 class APITopCustomers(APIView):
@@ -44,6 +46,18 @@ class APITopCustomers(APIView):
 
 
 class APIDeals(APIView):
+    def save_deals_from_file(self, input_file):
+        try:
+            reader = csv.DictReader(codecs.iterdecode(input_file, 'utf-8'))
+            for line in reader:
+                new_customer, created = Customer.objects.get_or_create(username=line['customer'].lower().strip())
+                new_item, created = Gem.objects.get_or_create(name=line['item'].lower().strip())
+                new_deal = Deal.objects.create(customer=new_customer, item=new_item, total=line['total'],
+                                               quantity=line['quantity'], date=line['date'])
+                new_deal.save()
+        except KeyError:
+            raise KeyError('The file content does not match the desired format')
+
     def post(self, request):
         file_serializer = FileSerializer(data=request.data)
         if file_serializer.is_valid(raise_exception=True):
@@ -56,7 +70,7 @@ class APIDeals(APIView):
 
             # считываю информаию из файла и заношу в БД
             try:
-                save_deals_from_file(file)
+                self.save_deals_from_file(file)
             except Exception as error:
                 raise ValidationError(detail=error)
 
