@@ -16,10 +16,8 @@ class APITopCustomers(APIView):
 
     def get(self, request, limit):
         # применяю агрегатную функцию чтобы опеределить потраченную покупателями сумму
-        customers = Customer.objects.annotate(Sum('deals__total'))
-
         # сортирую покупателей по размеру потраченной ими суммы и оставляю первые limit из них
-        customers = customers.order_by('deals__total__sum').reverse()[:limit]
+        customers = Customer.objects.annotate(Sum('deals__total')).order_by('-deals__total__sum')[:limit]
 
         customers_info = list()
         all_gems = list()

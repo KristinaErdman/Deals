@@ -11,11 +11,8 @@ class Customer(Model):
         verbose_name_plural = 'Покупатели'
 
     def get_gems_names(self) -> set:
-        deals = self.deals.all()
-        gems = set()
-        for deal in deals:
-            gems.add(deal.item.name)
-        return gems
+        gems = Gem.objects.filter(deals__customer_id__in=(self.id,)).only('name').distinct()
+        return set(map(lambda gem: gem.name, gems))
 
     def __str__(self) -> str:
         return f'{self.username}'
