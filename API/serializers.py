@@ -1,4 +1,3 @@
-from django.db.models import fields
 from rest_framework import serializers
 
 
@@ -15,4 +14,3 @@ class CustomersTopSerializer(serializers.Serializer):
     username = serializers.CharField()
     spent_money = serializers.IntegerField()
     gems = serializers.ListField()
-

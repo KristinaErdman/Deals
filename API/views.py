@@ -1,19 +1,19 @@
 from django.db.models import Sum
 from rest_framework import status
+from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.response  import Response
+
 from .models import Customer, Deal, Gem
 from .serializers import CustomersTopSerializer, FileSerializer
 from .services import from_fileDeals_to_db
 
 
+class APITopCustomers(APIView):
 
-class APITopCustomers (APIView):
-
-    def get (self, request, limit):
+    def get(self, request, limit):
         # применяю агрегатную функцию чтобы опеределить потраченную покупателями сумму
         customers = Customer.objects.annotate(Sum('deals__total'))
-        
+
         # сортирую покупателей по размеру потраченной ими суммы и оставляю первые limit из них
         customers = customers.order_by('deals__total__sum').reverse()[:limit]
 
@@ -27,12 +27,12 @@ class APITopCustomers (APIView):
                 'gems': customer.get_gems_names(),
             }
             customers_info.append(info)
-            all_gems.extend(info['gems'])  
+            all_gems.extend(info['gems'])
 
-        del(customers)
+        del (customers)
         # формирую множество уникальных камней
-        unique_gems = set([ gem for gem in all_gems if all_gems.count(gem)==1])
-        del(all_gems)
+        unique_gems = set([gem for gem in all_gems if all_gems.count(gem) == 1])
+        del (all_gems)
 
         # у каждого покупателя убираю уникальные камни
         for customer in customers_info:
@@ -42,9 +42,9 @@ class APITopCustomers (APIView):
         return Response({'response': serializer.data}, status=status.HTTP_200_OK)
 
 
-class APIDeals (APIView):
+class APIDeals(APIView):
 
-    def post (self, request):
+    def post(self, request):
         file_serializer = FileSerializer(data=request.data)
         if file_serializer.is_valid():
             file = request.data['deals']
@@ -58,18 +58,9 @@ class APIDeals (APIView):
             error = from_fileDeals_to_db(file)
 
             if error:
-                return Response( {'Status': 'Error', 'Desc': str(error)}, status=status.HTTP_400_BAD_REQUEST )
+                return Response({'Status': 'Error', 'Desc': str(error)}, status=status.HTTP_400_BAD_REQUEST)
             else:
                 return Response({'Status': 'OK'}, status=status.HTTP_201_CREATED)
         else:
-            return Response( {'Status': 'Error', 'Desc': file_serializer.errors['deals'], }, status=status.HTTP_400_BAD_REQUEST )
-    
-
-
-
-
-
-
-
-
-
+            return Response({'Status': 'Error', 'Desc': file_serializer.errors['deals'], },
+                            status=status.HTTP_400_BAD_REQUEST)
