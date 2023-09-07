@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 
 from .models import Customer, Deal, Gem
 from .serializers import CustomersTopSerializer, FileSerializer
-from .services import from_fileDeals_to_db
+from .services import save_deals_from_file
 
 
 class APITopCustomers(APIView):
@@ -55,7 +55,10 @@ class APIDeals(APIView):
             Deal.objects.all().delete()
 
             # считываю информаию из файла и заношу в БД
-            error = from_fileDeals_to_db(file)
+            try:
+                save_deals_from_file(file)
+            except Exception as error:
+                raise ValidationError(detail=error)
 
             if error:
                 return Response({'Status': 'Error', 'Desc': str(error)}, status=status.HTTP_400_BAD_REQUEST)

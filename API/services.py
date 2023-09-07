@@ -4,8 +4,7 @@ import csv
 from .models import Customer, Deal, Gem
 
 
-def from_fileDeals_to_db(input_file):
-    error = None
+def save_deals_from_file(input_file):
     try:
         reader = csv.DictReader(codecs.iterdecode(input_file, 'utf-8'))
         for line in reader:
@@ -15,7 +14,5 @@ def from_fileDeals_to_db(input_file):
                                            quantity=line['quantity'], date=line['date'])
             new_deal.save()
     except KeyError:
-        error = KeyError('The file content does not match the desired format')
-    finally:
-        return error
+        raise KeyError('The file content does not match the desired format')
 
