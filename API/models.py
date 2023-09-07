@@ -4,7 +4,7 @@ from django.db.models.deletion import CASCADE
 
 
 class Customer(Model):
-    username = CharField(max_length=50, db_index=True, primary_key=True, verbose_name='логин покупателя')
+    username = CharField(max_length=50, unique=True, verbose_name='логин покупателя')
 
     class Meta:
         verbose_name = 'Покупатель'
