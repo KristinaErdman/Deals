@@ -1,16 +1,14 @@
-FROM python:3.9.6-alpine3.14
+FROM python:3.9.6-slim as base
 
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
-RUN mkdir -p /src/DEALS
-WORKDIR /src/DEALS
+RUN pip install poetry
+RUN poetry config virtualenvs.create false
 
-ADD . /src/DEALS
+WORKDIR /app
 
-RUN pip install --upgrade pip && pip install -r requirements.txt
-RUN python3.9 manage.py makemigrations && python3.9 manage.py migrate
+COPY pyproject.toml .
+COPY poetry.lock .
 
-CMD python3.9 manage.py runserver 127.0.0.1:8000
-EXPOSE 8000
-
+RUN poetry install
