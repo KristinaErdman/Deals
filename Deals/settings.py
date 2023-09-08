@@ -136,3 +136,11 @@ REST_FRAMEWORK = {
 
 if not DEBUG:
     REST_FRAMEWORK['DEFAULT_RENDERER_CLASSES'] = ('rest_framework.renderers.JSONRenderer',)
+
+# CASHING
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        "TIMEOUT": 60,  # seconds
+    }
+}

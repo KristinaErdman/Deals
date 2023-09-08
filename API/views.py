@@ -1,8 +1,11 @@
 import codecs
 import csv
 
+from django.core.cache import cache
 from django.db import transaction
 from django.db.models import Sum
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
@@ -14,6 +17,7 @@ from .serializers import CustomersTopSerializer, FileSerializer
 
 class APITopCustomers(APIView):
 
+    @method_decorator(cache_page(60))
     def get(self, request):
         try:
             limit = int(request.query_params.get('limit', None))
@@ -91,5 +95,7 @@ class APIDeals(APIView):
                 self.save_deals_from_file(file)
             except Exception as error:
                 raise ValidationError(detail=error)
+
+            cache.clear()
 
             return Response({'Status': 'OK'}, status=status.HTTP_201_CREATED)
